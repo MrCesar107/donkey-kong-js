@@ -39,6 +39,7 @@ class Player extends Entity {
     });
 
     this.move();
+    this.checkCollisions();
   }
 
   move() {
@@ -56,6 +57,18 @@ class Player extends Entity {
         this.y += this.speed;
         break;
     }
+  }
+
+  checkCollisions() {
+    this.checkScreenCollisions();
+  }
+
+  checkScreenCollisions() {
+    if (this.x + this.width > canvas.width) this.x = canvas.width - this.width;
+    if (this.x < 0) this.x = 0;
+    if (this.y + this.height > canvas.height)
+      this.y = canvas.height - this.height;
+    if (this.y < 0) this.y = 0;
   }
 }
 
@@ -77,7 +90,7 @@ function clearCanvas() {
 }
 
 function init() {
-  player = new Player(canvas.width / 2, canvas.height / 2, 32, 32, "#FF0000");
+  player = new Player(canvas.width / 2, canvas.height / 2, 32, 32, "#E85617");
   startGame();
 }
 
