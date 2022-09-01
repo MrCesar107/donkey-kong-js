@@ -35,40 +35,40 @@ class Player extends Entity {
     super(x, y, dy, width, height, color);
     this.speed = 5;
     this.gravity = 0.25;
-    this.direction = "none";
+    this.canJump = true;
+    this.keyboard = [];
+    this.setupKeyboard();
   }
 
   update() {
-    this.updateDirection();
     this.move();
     this.checkCollisions();
   }
 
-  updateDirection() {
-    addEventListener("keydown", (event) => {
-      if (event.code === "ArrowRight") this.direction = "right";
-      else if (event.code === "ArrowLeft") this.direction = "left";
-      else if (event.code === "ArrowUp") this.direction = "up";
-      else if (event.code === "ArrowDown") this.direction = "down";
+  setupKeyboard() {
+    document.addEventListener("keydown", (e) => {
+      this.keyboard[e.code] = true;
     });
 
-    addEventListener("keyup", () => {
-      this.direction = "none";
+    document.addEventListener("keyup", (e) => {
+      this.keyboard[e.code] = false;
     });
   }
 
   move() {
-    switch (this.direction) {
-      case "right":
-        this.x += this.speed;
-        break;
-      case "left":
-        this.x -= this.speed;
-        break;
-    }
+    if (this.keyboard["ArrowRight"]) this.x += this.speed;
+    if (this.keyboard["ArrowLeft"]) this.x -= this.speed;
+    if (this.keyboard["Space"]) this.jump();
 
     this.dy += this.gravity;
     this.y += this.dy;
+  }
+
+  jump() {
+    if (this.canJump) {
+      this.dy = -5;
+      this.canJump = false;
+    }
   }
 
   checkCollisions() {
@@ -86,6 +86,7 @@ class Player extends Entity {
       if (this.isColliding(platform)) {
         this.dy = 0;
         this.y = platform.y - this.height;
+        this.canJump = true;
       }
     });
   }
@@ -122,7 +123,7 @@ function init() {
 
 function generatePlatforms() {
   platforms.push(new Platform(0, canvas.height - 32, canvas.width, 32));
-  platforms.push(new Platform(0, canvas.height - 160, canvas.width - 256, 32));
+  platforms.push(new Platform(0, canvas.height - 192, canvas.width - 256, 32));
   platforms.push(
     new Platform(256, canvas.height - 352, canvas.width - 256, 32)
   );
