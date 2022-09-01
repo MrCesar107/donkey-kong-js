@@ -1,13 +1,15 @@
 const canvas = document.querySelector("#canvas");
 const ctx = canvas.getContext("2d");
 let player;
+let platforms = [];
 let animationId;
 
 // Entities classess
 class Entity {
-  constructor(x, y, width, height, color = "#fff") {
+  constructor(x, y, dy, width, height, color = "#fff") {
     this.x = x;
     this.y = y;
+    this.dy = dy;
     this.width = width;
     this.height = height;
     this.color = color;
@@ -17,16 +19,32 @@ class Entity {
     ctx.fillStyle = this.color;
     ctx.fillRect(this.x, this.y, this.width, this.height);
   }
+
+  isColliding(entity) {
+    return (
+      this.x < entity.x + entity.width &&
+      this.x + this.width > entity.x &&
+      this.y < entity.y + entity.height &&
+      this.height + this.y > entity.y
+    );
+  }
 }
 
 class Player extends Entity {
-  constructor(x, y, width, height, color = "#fff") {
-    super(x, y, width, height, color);
+  constructor(x, y, dy, width, height, color = "#fff") {
+    super(x, y, dy, width, height, color);
     this.speed = 5;
+    this.gravity = 0.25;
     this.direction = "none";
   }
 
   update() {
+    this.updateDirection();
+    this.move();
+    this.checkCollisions();
+  }
+
+  updateDirection() {
     addEventListener("keydown", (event) => {
       if (event.code === "ArrowRight") this.direction = "right";
       else if (event.code === "ArrowLeft") this.direction = "left";
@@ -37,9 +55,6 @@ class Player extends Entity {
     addEventListener("keyup", () => {
       this.direction = "none";
     });
-
-    this.move();
-    this.checkCollisions();
   }
 
   move() {
@@ -50,13 +65,10 @@ class Player extends Entity {
       case "left":
         this.x -= this.speed;
         break;
-      case "up":
-        this.y -= this.speed;
-        break;
-      case "down":
-        this.y += this.speed;
-        break;
     }
+
+    this.dy += this.gravity;
+    this.y += this.dy;
   }
 
   checkCollisions() {
@@ -69,6 +81,19 @@ class Player extends Entity {
     if (this.y + this.height > canvas.height)
       this.y = canvas.height - this.height;
     if (this.y < 0) this.y = 0;
+
+    platforms.forEach((platform) => {
+      if (this.isColliding(platform)) {
+        this.dy = 0;
+        this.y = platform.y - this.height;
+      }
+    });
+  }
+}
+
+class Platform extends Entity {
+  constructor(x, y, width, height, color = "#ff0000") {
+    super(x, y, 0, width, height, color);
   }
 }
 
@@ -90,8 +115,22 @@ function clearCanvas() {
 }
 
 function init() {
-  player = new Player(canvas.width / 2, canvas.height / 2, 32, 32, "#E85617");
+  player = new Player(170, canvas.height - 130, 2, 32, 32, "#EDF50C");
+  generatePlatforms();
   startGame();
+}
+
+function generatePlatforms() {
+  platforms.push(new Platform(0, canvas.height - 32, canvas.width, 32));
+  platforms.push(new Platform(0, canvas.height - 160, canvas.width - 256, 32));
+  platforms.push(
+    new Platform(256, canvas.height - 352, canvas.width - 256, 32)
+  );
+  platforms.push(new Platform(0, canvas.height - 512, canvas.width - 256, 32));
+  platforms.push(new Platform(0, canvas.height - 704, canvas.width - 256, 32));
+  platforms.push(
+    new Platform(canvas.width / 2 - 200, canvas.height - 864, 300, 32)
+  );
 }
 
 function startGame() {
@@ -114,7 +153,14 @@ function animate() {
 }
 
 function drawEntities() {
+  drawPlatforms();
   player.draw();
+}
+
+function drawPlatforms() {
+  platforms.forEach((platform) => {
+    platform.draw();
+  });
 }
 
 function updateEntities() {
