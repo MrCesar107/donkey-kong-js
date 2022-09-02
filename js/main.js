@@ -128,9 +128,11 @@ function generatePlatforms() {
     new Platform(256, canvas.height - 352, canvas.width - 256, 32)
   );
   platforms.push(new Platform(0, canvas.height - 512, canvas.width - 256, 32));
-  platforms.push(new Platform(0, canvas.height - 704, canvas.width - 256, 32));
   platforms.push(
-    new Platform(canvas.width / 2 - 200, canvas.height - 864, 300, 32)
+    new Platform(255, canvas.height - 704, canvas.width - 256, 32)
+  );
+  platforms.push(
+    new Platform(canvas.width / 2 + 100, canvas.height - 864, 300, 32)
   );
 }
 
