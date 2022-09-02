@@ -1,7 +1,8 @@
 const canvas = document.querySelector("#canvas");
 const ctx = canvas.getContext("2d");
 let player;
-let platforms = [];
+const platforms = [];
+const stairs = [];
 let animationId;
 
 // Entities classess
@@ -33,9 +34,11 @@ class Entity {
 class Player extends Entity {
   constructor(x, y, dy, width, height, color = "#fff") {
     super(x, y, dy, width, height, color);
-    this.speed = 5;
+    this.speedX = 5;
+    this.speedY = 3;
     this.gravity = 0.25;
     this.canJump = true;
+    this.isClimbing = false;
     this.keyboard = [];
     this.setupKeyboard();
   }
@@ -56,11 +59,20 @@ class Player extends Entity {
   }
 
   move() {
-    if (this.keyboard["ArrowRight"]) this.x += this.speed;
-    if (this.keyboard["ArrowLeft"]) this.x -= this.speed;
+    if (this.keyboard["ArrowRight"]) this.x += this.speedX;
+    if (this.keyboard["ArrowLeft"]) this.x -= this.speedX;
+    if (this.keyboard["ArrowUp"]) this.climb();
     if (this.keyboard["Space"]) this.jump();
 
-    this.dy += this.gravity;
+    if (!this.isClimbing) {
+      this.dy += this.gravity;
+      this.speedX = 5;
+    } else {
+      this.speedX = 0;
+      this.dy += 0;
+      this.canJump = false;
+    }
+
     this.y += this.dy;
   }
 
@@ -69,6 +81,17 @@ class Player extends Entity {
       this.dy = -5;
       this.canJump = false;
     }
+  }
+
+  climb() {
+    stairs.forEach((stair) => {
+      if (this.isColliding(stair)) {
+        this.isClimbing = true;
+        this.y -= this.speedY;
+      } else {
+        this.isClimbing = false;
+      }
+    });
   }
 
   checkCollisions() {
@@ -98,6 +121,12 @@ class Platform extends Entity {
   }
 }
 
+class Stairs extends Entity {
+  constructor(x, y, width, height, color = "#0398FC") {
+    super(x, y, 0, width, height, color);
+  }
+}
+
 resizeCanvas();
 init();
 
@@ -117,6 +146,7 @@ function clearCanvas() {
 
 function init() {
   player = new Player(170, canvas.height - 130, 2, 32, 32, "#EDF50C");
+  generateStairs();
   generatePlatforms();
   startGame();
 }
@@ -134,6 +164,10 @@ function generatePlatforms() {
   platforms.push(
     new Platform(canvas.width / 2 + 100, canvas.height - 864, 300, 32)
   );
+}
+
+function generateStairs() {
+  stairs.push(new Stairs(canvas.width / 2 + 500, canvas.height - 160, 32, 128));
 }
 
 function startGame() {
@@ -157,12 +191,19 @@ function animate() {
 
 function drawEntities() {
   drawPlatforms();
+  drawStairs();
   player.draw();
 }
 
 function drawPlatforms() {
   platforms.forEach((platform) => {
     platform.draw();
+  });
+}
+
+function drawStairs() {
+  stairs.forEach((stair) => {
+    stair.draw();
   });
 }
 
