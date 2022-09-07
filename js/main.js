@@ -62,11 +62,11 @@ class Player extends Entity {
     if (this.keyboard["ArrowRight"]) this.x += this.speedX;
     if (this.keyboard["ArrowLeft"]) this.x -= this.speedX;
     if (this.keyboard["ArrowUp"]) this.climb();
+    if (this.keyboard["ArrowDown"]) this.descend();
     if (this.keyboard["Space"]) this.jump();
 
     if (!this.isClimbing) {
       this.dy += this.gravity;
-      this.speedX = 5;
     } else {
       this.speedX = 0;
       this.dy += 0;
@@ -94,6 +94,17 @@ class Player extends Entity {
     });
   }
 
+  descend() {
+    stairs.forEach((stair) => {
+      if (this.isColliding(stair)) {
+        this.isClimbing = true;
+        this.y += this.speedY;
+      } else {
+        this.isClimbing = false;
+      }
+    });
+  }
+
   checkCollisions() {
     this.checkScreenCollisions();
   }
@@ -110,6 +121,7 @@ class Player extends Entity {
         this.dy = 0;
         this.y = platform.y - this.height;
         this.canJump = true;
+        this.speedX = 5;
       }
     });
   }
